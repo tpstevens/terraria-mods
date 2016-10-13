@@ -1,0 +1,8 @@
+author = PreacherJayne
+version = 0.0.1
+displayName = Deadliest Warrior
+hideCode = true
+hideResources = true
+includeSource = false
+buildIgnore = *.csproj, *.user, obj\*, bin\*, .vs\*
+includePDB = true
