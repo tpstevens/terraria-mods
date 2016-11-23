@@ -46,7 +46,7 @@
     </Reference>
     <Reference Include="System" />
     <Reference Include="Terraria">
-      <HintPath>..\..\..\..\..\..\..\..\GOG Library\Terraria\Terraria.exe</HintPath>
+      <HintPath>..\..\..\..\..\..\..\..\GOG Library (SSD)\Terraria\Terraria.exe</HintPath>
     </Reference>
   </ItemGroup>
   <ItemGroup>
@@ -54,6 +54,8 @@
     <Content Include="description.txt" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="CombatTracker.cs" />
+    <Compile Include="CustomNPC.cs" />
     <Compile Include="DeadliestWarrior.cs" />
     <Compile Include="PlayerCommands.cs" />
     <Compile Include="Utilities.cs" />

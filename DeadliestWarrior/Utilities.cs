@@ -9,6 +9,22 @@ namespace DeadliestWarrior
 		public const double DAWN = 4.5;
 		public const double DUSK = 19.5;
 
+		public static bool isSupportedBoss(int npcType)
+		{
+			switch (npcType)
+			{
+				case 4:		// Eye of Cthulu
+				case 35:	// Skeletron
+				case 127:	// Skeletron Prime
+				case 134:	// Destroyer
+				case 345:	// Ice Queen
+				case 395:	// Martian Saucer
+					return true;
+				default:
+					return false;
+			}
+		}
+
 		public static void setTime24(double hours)
 		{
 			while (hours >= 24)
@@ -61,6 +77,29 @@ namespace DeadliestWarrior
 			int hours = (int)time;
 			int minutes = (int)((time - hours) * 60.0);
 			return hours + ":" + (minutes < 10 ? "0" : "") + minutes;
+		}
+
+		public static NPC spawnNPC(int type, Player player)
+		{
+			Random r = new Random();
+			int quadrant = r.Next() % 4;
+			int degrees = r.Next() % 90;
+			int h = Main.offScreenRange * 32;
+
+			int x = (int) (h * Math.Cos(degrees));
+			int y = (int)(h * Math.Sin(degrees));
+
+			if (quadrant == 1 || quadrant == 2)
+				x *= -1;
+
+			if (quadrant == 2 || quadrant == 3)
+				y *= -1;
+
+			int npcId = NPC.NewNPC((int)player.Center.X + x, (int)player.Center.Y + y, type);
+			if (npcId < Main.npc.Length)
+				return Main.npc[npcId];
+
+			return null;
 		}
 	}
 }

@@ -1,6 +1,7 @@
 ﻿using System;
 
 using Terraria;
+using Terraria.ModLoader;
 
 namespace DeadliestWarrior
 {
@@ -18,6 +19,9 @@ namespace DeadliestWarrior
 					break;
 				case "addtime":
 					cmdAddTime(args);
+					break;
+				case "boss":
+					cmdBoss(args);
 					break;
 				case "dawn":
 					cmdDawn(args);
@@ -48,6 +52,47 @@ namespace DeadliestWarrior
 			{
 				Utilities.setTime24(Utilities.getTime24() + h);
 				Main.NewText("Time set to " + Utilities.getTime12Formatted());
+			}
+		}
+
+		private static void cmdBoss(string[] args)
+		{
+			if (args.Length != 1)
+			{
+				Main.NewText("Usage: /boss [destroyer|eye|prime|queen|saucer|skeletron]");
+				return;
+			}
+
+			String boss = args[0].ToLower();
+			Player player = Main.player[Main.selectedPlayer];
+
+			switch (boss)
+			{
+				case "destroyer":
+					Utilities.setTime24(Utilities.DUSK);
+					CombatTracker._instance.registerBoss(Utilities.spawnNPC(134, player));
+					break;
+				case "eye":
+					Utilities.setTime24(Utilities.DUSK);
+					CombatTracker._instance.registerBoss(Utilities.spawnNPC(4, player));
+					break;
+				case "prime":
+					Utilities.setTime24(Utilities.DUSK);
+					CombatTracker._instance.registerBoss(Utilities.spawnNPC(127, player));
+					break;
+				case "queen":
+					CombatTracker._instance.registerBoss(Utilities.spawnNPC(345, player));
+					break;
+				case "saucer":
+					CombatTracker._instance.registerBoss(Utilities.spawnNPC(395, player));
+					break;
+				case "skeletron":
+					Utilities.setTime24(Utilities.DUSK);
+					CombatTracker._instance.registerBoss(Utilities.spawnNPC(35, player));
+					break;
+				default:
+					Main.NewText("Unknown boss: " + args[0]);
+					break;
 			}
 		}
 

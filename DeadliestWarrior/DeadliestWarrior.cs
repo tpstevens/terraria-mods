@@ -11,11 +11,17 @@ namespace DeadliestWarrior
 		{
 			Properties = new ModProperties()
 			{
-				Autoload = true,
 				AutoloadGores = true,
 				AutoloadSounds = true,
 				AutoloadBackgrounds = true
 			};
+		}
+
+		public override void Load()
+		{
+			base.Load();
+
+			AddGlobalNPC("custom npc", new CustomNPC());
 		}
 
 		public override void ChatInput(string text)
