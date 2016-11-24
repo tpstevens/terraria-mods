@@ -14,11 +14,46 @@ namespace DeadliestWarrior
 			switch (npcType)
 			{
 				case 4:		// Eye of Cthulu
-				case 35:	// Skeletron
-				case 127:	// Skeletron Prime
-				case 134:	// Destroyer
-				case 345:	// Ice Queen
-				case 395:	// Martian Saucer
+				case 35:    // Skeletron
+				case 36:
+				case 127:   // Skeletron Prime
+				case 128:
+				case 129:
+				case 130:
+				case 131:
+				case 134:   // Destroyer
+				case 135:
+				case 136:
+				case 245:	// Golem
+				case 246:
+				case 247:
+				case 248:
+				case 249:
+				case 345:   // Ice Queen
+				case 392:   // Martian Saucer
+				case 393:
+				case 394:
+				case 395:
+					return true;
+				default:
+					return false;
+			}
+		}
+
+		public static bool countsTowardsRequiredBossHealth(int npcType)
+		{
+			switch (npcType)
+			{
+				case 4:     // Eye of Cthulu
+				case 35:    // Skeletron Head
+				case 127:   // Skeletron Prime Head
+				case 134:   // Destroyer
+				case 245:   // Golem Body
+				case 246:	// Golem Head
+				case 345:   // Ice Queen
+				case 393:	// Saucer Turret
+				case 394:	// Saucer Cannon
+				case 395:	// Saucer Core
 					return true;
 				default:
 					return false;
@@ -79,12 +114,18 @@ namespace DeadliestWarrior
 			return hours + ":" + (minutes < 10 ? "0" : "") + minutes;
 		}
 
-		public static NPC spawnNPC(int type, Player player)
+		public static NPC spawnBoss(int type, Player player)
 		{
+			if (CombatTracker._instance.bossActive())
+			{
+				Main.NewText("ERROR: Only one boss allowed active at once. To be improved...");
+				return null;
+			}
+
 			Random r = new Random();
 			int quadrant = r.Next() % 4;
 			int degrees = r.Next() % 90;
-			int h = Main.offScreenRange * 32;
+			int h = 16;
 
 			int x = (int) (h * Math.Cos(degrees));
 			int y = (int)(h * Math.Sin(degrees));
@@ -95,11 +136,8 @@ namespace DeadliestWarrior
 			if (quadrant == 2 || quadrant == 3)
 				y *= -1;
 
-			int npcId = NPC.NewNPC((int)player.Center.X + x, (int)player.Center.Y + y, type);
-			if (npcId < Main.npc.Length)
-				return Main.npc[npcId];
-
-			return null;
+			int npcIndex = NPC.NewNPC((int)player.position.X + x, (int)player.position.Y + y, type);
+			return Main.npc[npcIndex];
 		}
 	}
 }

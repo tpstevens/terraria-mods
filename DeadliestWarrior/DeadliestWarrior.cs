@@ -1,7 +1,4 @@
-﻿using System;
-
-using Terraria;
-using Terraria.ModLoader;
+﻿using Terraria.ModLoader;
 
 namespace DeadliestWarrior
 {
@@ -22,6 +19,7 @@ namespace DeadliestWarrior
 			base.Load();
 
 			AddGlobalNPC("custom npc", new CustomNPC());
+			AddPlayer("custom player", new CustomPlayer());
 		}
 
 		public override void ChatInput(string text)
