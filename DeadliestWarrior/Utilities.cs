@@ -9,37 +9,6 @@ namespace DeadliestWarrior
 		public const double DAWN = 4.5;
 		public const double DUSK = 19.5;
 
-		public static bool isSupportedBoss(int npcType)
-		{
-			switch (npcType)
-			{
-				case 4:		// Eye of Cthulu
-				case 35:    // Skeletron
-				case 36:
-				case 127:   // Skeletron Prime
-				case 128:
-				case 129:
-				case 130:
-				case 131:
-				case 134:   // Destroyer
-				case 135:
-				case 136:
-				case 245:	// Golem
-				case 246:
-				case 247:
-				case 248:
-				case 249:
-				case 345:   // Ice Queen
-				case 392:   // Martian Saucer
-				case 393:
-				case 394:
-				case 395:
-					return true;
-				default:
-					return false;
-			}
-		}
-
 		public static bool countsTowardsRequiredBossHealth(int npcType)
 		{
 			switch (npcType)
@@ -54,6 +23,44 @@ namespace DeadliestWarrior
 				case 393:	// Saucer Turret
 				case 394:	// Saucer Cannon
 				case 395:	// Saucer Core
+					return true;
+				default:
+					return false;
+			}
+		}
+
+		public static string getItemName(int itemId)
+		{
+			Item item = new Item();
+			item.SetDefaults(itemId);
+			return item.name;
+		}
+
+		public static bool isSupportedBoss(int npcType)
+		{
+			switch (npcType)
+			{
+				case 4:     // Eye of Cthulu
+				case 35:    // Skeletron
+				case 36:
+				case 127:   // Skeletron Prime
+				case 128:
+				case 129:
+				case 130:
+				case 131:
+				case 134:   // Destroyer
+				case 135:
+				case 136:
+				case 245:   // Golem
+				case 246:
+				case 247:
+				case 248:
+				case 249:
+				case 345:   // Ice Queen
+				case 392:   // Martian Saucer
+				case 393:
+				case 394:
+				case 395:
 					return true;
 				default:
 					return false;
@@ -125,7 +132,7 @@ namespace DeadliestWarrior
 			Random r = new Random();
 			int quadrant = r.Next() % 4;
 			int degrees = r.Next() % 90;
-			int h = 16;
+			int h = 1600;
 
 			int x = (int) (h * Math.Cos(degrees));
 			int y = (int)(h * Math.Sin(degrees));

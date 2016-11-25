@@ -28,6 +28,12 @@ namespace DeadliestWarrior
 				case "dusk":
 					cmdDusk(args);
 					break;
+				case "item":
+					cmdItem(args);
+					break;
+				case "randomize":
+					cmdRandomize(args);
+					break;
 				case "settime":
 					cmdSetTime(args);
 					break;
@@ -116,12 +122,81 @@ namespace DeadliestWarrior
 			if (args.Length != 0)
 			{
 				Main.NewText("Usage: /dusk");
+				return;
 			}
-			else
+
+			Utilities.setTime24(Utilities.DUSK);
+			Main.NewText("Time set to dusk");
+		}
+
+		private static void cmdItem(string[] args)
+		{
+			if (args.Length != 1)
 			{
-				Utilities.setTime24(Utilities.DUSK);
-				Main.NewText("Time set to dusk");
+				Main.NewText("Usage: /item [id]");
+				return;
 			}
+
+			int itemId = -1;
+			if (!int.TryParse(args[0], out itemId))
+			{
+				Main.NewText("Could not parse " + args[0] + " as an item ID");
+				return;
+			}
+
+			Main.player[Main.selectedPlayer].QuickSpawnItem(itemId);
+		}
+
+		private static int[] cmdRandomize(string[] args)
+		{
+			if (args.Length != 0)
+			{
+				Main.NewText("Usage: /randomize");
+				return null;
+			}
+
+			Player player = Main.player[Main.selectedPlayer];
+			Random r = new Random();
+
+			int[,] armor = {
+				{727, 728, 729},	// wooden - mixed
+				{90, 81, 77},		// iron - mixed
+				{696, 697, 698}		// platinum - mixed
+			};
+
+			int[,] weapons = {
+				{ 39, 24, 0 },		// wooden bow, wooden sword
+				{ 99, 4, 0 },		// iron bow, iron broadsword
+				{ 3480, 3484, 744 }	// platinum bow, platinum broadsword, diamond staff
+			};
+
+			// Clear player inventory
+			for (int i = 0; i < player.inventory.Length; ++i)
+			{
+				player.inventory[i].SetDefaults(0);
+			}
+
+			// Choose an item tier
+			int index = r.Next() % armor.GetLength(0);
+
+			// Randomize armor set
+			for (int i = 0; i < 3; ++i)
+			{
+				player.armor[i].SetDefaults(armor[index, i]);
+			}
+
+			// Randomize weapon set
+			for (int i = 0; i < weapons.GetLength(1); ++i)
+			{
+				player.QuickSpawnItem(weapons[index, i]);
+			}
+
+			// Give player unlimited stuff
+			player.QuickSpawnItem(3103);	// endless quiver
+			player.QuickSpawnItem(3104);    // endless musket pouch
+			player.QuickSpawnItem(189, 30); // lots of mana potions
+
+			return weapons[index];
 		}
 
 		private static void cmdSetTime(string[] args)
