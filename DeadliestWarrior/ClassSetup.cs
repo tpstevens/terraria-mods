@@ -25,7 +25,7 @@ namespace DeadliestWarrior
 			{0, 24, 39},		// [magic], wooden sword, wooden bow
 			{0, 4, 99},			// [magic], iron broadsword, iron bow
 			{744, 3484, 3480},  // diamond staff, platinum broadsword, platinum bow
-			{3209, 3054, 3008}, // Crystal Serpent, Shadowflame Knife, Dart Rifle
+			{3209, 3054, 3788}, // Crystal Serpent, Shadowflame Knife, Onyx Blaster
 			{2188, 3013, 1229},	// Venom Staff, Fetid Baghnakhs, Chlorophyte Shotbow
 			{1260, 1259, 1254},	// Rainbow Gun, Flower Pow, Sniper Rifle
 			{2622, 1569, 3540}	// Razorblade Typhoon, Vampire Knives, Phantasm
