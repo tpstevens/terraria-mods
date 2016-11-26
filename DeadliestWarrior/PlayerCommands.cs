@@ -13,9 +13,6 @@ namespace DeadliestWarrior
 
 			switch (cmdLower)
 			{
-				case "debug":
-					Main.NewText("Current time: " + Utilities.getTime24Formatted());
-					break;
 				case "addtime":
 					cmdAddTime(args);
 					break;
@@ -28,13 +25,18 @@ namespace DeadliestWarrior
 				case "dusk":
 					cmdDusk(args);
 					break;
+				case "noon":
+					cmdNoon(args);
+					break;
 				case "item":
 					cmdItem(args);
 					break;
-				case "randomize":
-					cmdRandomize(args);
+				case "settier":
+				case "tier":
+					cmdSetTier(args);
 					break;
 				case "settime":
+				case "time":
 					cmdSetTime(args);
 					break;
 				default:
@@ -62,46 +64,66 @@ namespace DeadliestWarrior
 
 		private static void cmdBoss(string[] args)
 		{
-			if (args.Length != 1)
+			if (args.Length != 1 && args.Length != 2)
 			{
-				Main.NewText("Usage: /boss [destroyer|eye|golem|prime|queen|saucer|skeletron]");
+				Main.NewText("Usage: /boss [destroyer|eye|prime|queen|saucer|skeletron] [tier (blank for random)]");
 				return;
 			}
 
+			bool applySetup = false;
+			ClassSetup classSetup;
 			String boss = args[0].ToLower();
 			Player player = Main.player[Main.selectedPlayer];
+
+			int tier = -1;
+			if (args.Length == 2)
+			{
+				if (!int.TryParse(args[1], out tier))
+				{
+					Main.NewText("Failed to recognize tier " + args[1] + " as an integer. Randomizing.");
+					classSetup = new ClassSetup();
+				}
+				else
+				{
+					classSetup = new ClassSetup(tier);
+				}
+			}
+			else
+			{
+				classSetup = new ClassSetup();
+			}
 
 			switch (boss)
 			{
 				case "destroyer":
 					Utilities.setTime24(Utilities.DUSK);
-					CombatTracker._instance.registerBoss(Utilities.spawnBoss(134, player));
+					applySetup = CombatTracker._instance.registerBoss(Utilities.spawnBoss(134, player), classSetup);
 					break;
 				case "eye":
 					Utilities.setTime24(Utilities.DUSK);
-					CombatTracker._instance.registerBoss(Utilities.spawnBoss(4, player));
-					break;
-				case "golem":
-					CombatTracker._instance.registerBoss(Utilities.spawnBoss(245, player));
+					applySetup = CombatTracker._instance.registerBoss(Utilities.spawnBoss(4, player), classSetup);
 					break;
 				case "prime":
 					Utilities.setTime24(Utilities.DUSK);
-					CombatTracker._instance.registerBoss(Utilities.spawnBoss(127, player));
+					applySetup = CombatTracker._instance.registerBoss(Utilities.spawnBoss(127, player), classSetup);
 					break;
 				case "queen":
-					CombatTracker._instance.registerBoss(Utilities.spawnBoss(345, player));
+					applySetup = CombatTracker._instance.registerBoss(Utilities.spawnBoss(345, player), classSetup);
 					break;
 				case "saucer":
-					CombatTracker._instance.registerBoss(Utilities.spawnBoss(395, player));
+					applySetup = CombatTracker._instance.registerBoss(Utilities.spawnBoss(395, player), classSetup);
 					break;
 				case "skeletron":
 					Utilities.setTime24(Utilities.DUSK);
-					CombatTracker._instance.registerBoss(Utilities.spawnBoss(35, player));
+					applySetup = CombatTracker._instance.registerBoss(Utilities.spawnBoss(35, player), classSetup);
 					break;
 				default:
 					Main.NewText("Unknown boss: " + args[0]);
 					break;
 			}
+
+			if (applySetup)
+				Utilities.applyClassSetup(Main.player[Main.selectedPlayer], classSetup);
 		}
 
 		private static void cmdDawn(string[] args)
@@ -147,64 +169,45 @@ namespace DeadliestWarrior
 			Main.player[Main.selectedPlayer].QuickSpawnItem(itemId);
 		}
 
-		private static int[] cmdRandomize(string[] args)
+		private static void cmdNoon(string[] args)
 		{
 			if (args.Length != 0)
 			{
-				Main.NewText("Usage: /randomize");
-				return null;
+				Main.NewText("Usage: /noon");
+				return;
+			}
+
+			Utilities.setTime24(12);
+		}
+
+		private static void cmdSetTier(string[] args)
+		{
+			int tier = -1;
+
+			if (args.Length != 0 && args.Length != 1)
+			{
+				Main.NewText("Usage: /setTier [int tier]");
+				return;
+			}
+			else if (args.Length == 1 && !int.TryParse(args[0], out tier))
+			{
+				Main.NewText("Usage: /setTier [int tier]");
+				return;
 			}
 
 			Player player = Main.player[Main.selectedPlayer];
-			Random r = new Random();
+			ClassSetup setup;
 
-			int[,] armor = {
-				{727, 728, 729},	// wooden - mixed
-				{90, 81, 77},		// iron - mixed
-				{696, 697, 698}		// platinum - mixed
-			};
-
-			int[,] weapons = {
-				{ 39, 24, 0 },		// wooden bow, wooden sword
-				{ 99, 4, 0 },		// iron bow, iron broadsword
-				{ 3480, 3484, 744 }	// platinum bow, platinum broadsword, diamond staff
-			};
-
-			// Clear player inventory
-			for (int i = 0; i < player.inventory.Length; ++i)
-			{
-				player.inventory[i].SetDefaults(0);
-			}
-
-			// Choose an item tier
-			int index = r.Next() % armor.GetLength(0);
-
-			// Randomize armor set
-			for (int i = 0; i < 3; ++i)
-			{
-				player.armor[i].SetDefaults(armor[index, i]);
-			}
-
-			// Randomize weapon set
-			for (int i = 0; i < weapons.GetLength(1); ++i)
-			{
-				player.QuickSpawnItem(weapons[index, i]);
-			}
-
-			// Give player unlimited stuff
-			player.QuickSpawnItem(3103);	// endless quiver
-			player.QuickSpawnItem(3104);    // endless musket pouch
-			player.QuickSpawnItem(189, 30); // lots of mana potions
-
-			return weapons[index];
+			setup = (args.Length == 0) ? new ClassSetup() : new ClassSetup(tier);
+			Utilities.applyClassSetup(Main.player[Main.selectedPlayer], setup);
 		}
 
 		private static void cmdSetTime(string[] args)
 		{
 			if (args.Length != 1 && args.Length != 2)
 			{
-				Main.NewText("Usage: /setTime [hours] [am/pm (optional)]");
-				Main.NewText("Usage: /setTime [hours]:[minutes] [am/pm (optional)]");
+				Main.NewText("Usage: /[setTime|time] [hours] [am/pm (optional)]");
+				Main.NewText("Usage: /[setTime|time] [hours]:[minutes] [am/pm (optional)]");
 				return;
 			}
 

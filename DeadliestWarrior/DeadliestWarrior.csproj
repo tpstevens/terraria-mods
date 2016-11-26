@@ -52,8 +52,10 @@
   <ItemGroup>
     <Content Include="build.txt" />
     <Content Include="description.txt" />
+    <Content Include="KnownIssues.txt" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="ClassSetup.cs" />
     <Compile Include="CombatTracker.cs" />
     <Compile Include="CustomNPC.cs" />
     <Compile Include="CustomPlayer.cs" />

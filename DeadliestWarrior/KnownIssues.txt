@@ -1,0 +1,3 @@
+﻿- Leaving the world before killing a boss results in no log being generated 
+  until the player dies.
+- Can't automatically assign mounts.

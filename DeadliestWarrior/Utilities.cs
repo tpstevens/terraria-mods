@@ -121,6 +121,52 @@ namespace DeadliestWarrior
 			return hours + ":" + (minutes < 10 ? "0" : "") + minutes;
 		}
 
+		public static void applyClassSetup(Player player, ClassSetup setup)
+		{
+			// Clear inventory
+			for (int i = 0; i < player.inventory.Length; ++i)
+			{
+				player.inventory[i].SetDefaults(0);
+			}
+
+			// Spawn items
+			for (int i = 0; i < 3; ++i)
+			{
+				player.armor[i].SetDefaults(setup.armor[i]);
+
+				if (setup.weapons[i] != 0)
+					player.QuickSpawnItem(setup.weapons[i]);
+			}
+
+			int[] accessories = { 555, 405, 860, 1301, 1865 }; // Mana flower, Spectre Boots, Charm of Myths, Destroyer Emblem, Celestial Stone
+			for (int i = 3; i - 3 < accessories.Length; ++i)
+			{
+				if (setup.tier >= i - 2)
+				{
+					player.armor[i].SetDefaults(accessories[i - 3]);
+					player.armor[i].prefix = 66;
+				}
+				else
+				{
+					player.armor[i].SetDefaults(0);
+				}
+			}
+
+			if (setup.tier > 2)
+				player.QuickSpawnItem(2769);
+
+			// Give player unlimited stuff
+			player.QuickSpawnItem(3103);    // endless quiver
+			player.QuickSpawnItem(3104);    // endless musket pouch
+			player.QuickSpawnItem(189, 30); // lots of mana potions
+
+			// Set base health and mana
+			player.statLifeMax = setup.baseLife;
+			player.statLife = setup.baseLife;
+			player.statManaMax = setup.baseMana;
+			player.statMana = setup.baseMana;
+		}
+
 		public static NPC spawnBoss(int type, Player player)
 		{
 			if (CombatTracker._instance.bossActive())
@@ -134,7 +180,7 @@ namespace DeadliestWarrior
 			int degrees = r.Next() % 90;
 			int h = 1600;
 
-			int x = (int) (h * Math.Cos(degrees));
+			int x = (int)(h * Math.Cos(degrees));
 			int y = (int)(h * Math.Sin(degrees));
 
 			if (quadrant == 1 || quadrant == 2)

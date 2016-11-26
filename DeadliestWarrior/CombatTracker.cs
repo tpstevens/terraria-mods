@@ -9,9 +9,11 @@ namespace DeadliestWarrior
 	public sealed class CombatTracker
 	{
 		public static readonly CombatTracker _instance = new CombatTracker();
-		private static readonly string VERSION_CODE = "v1";
+		private static readonly string VERSION_CODE = "v4";
 		
-		private CombatLog currentLog;
+		private CombatLog currentLog = null;
+
+		public enum DamageType {MELEE = 0, MAGIC = 1, RANGED = 2, SIZE = 3};
 
 		private class CombatLog
 		{
@@ -20,11 +22,12 @@ namespace DeadliestWarrior
 
 			private int armorHead, armorChest, armorLegs;
 			private Dictionary<int, int> requiredBossParts;
-			private Dictionary<Tuple<int, string>, WeaponLog> weaponLogs;
-			public int totalDamageToBoss, totalBossHealth;
+			public int totalDamageToBoss = 0, totalBossHealth = 0;
 			public int maxLife, maxMana;
+			public int[] damageByType;
+			public int[] weaponIdsByType;
 
-			public CombatLog(Player player, NPC boss)
+			public CombatLog(Player player, NPC boss, ClassSetup setup)
 			{
 				this.player = player;
 				this.boss = boss;
@@ -35,12 +38,13 @@ namespace DeadliestWarrior
 				maxLife = player.statLifeMax2;
 				maxMana = player.statManaMax2;
 
-				totalDamageToBoss = 0;
-
-				Main.NewText(armorHead + " " + armorChest + " " + armorLegs);
-
 				requiredBossParts = new Dictionary<int, int>();
-				weaponLogs = new Dictionary<Tuple<int,string>, WeaponLog>();
+
+				damageByType = new int[(int)DamageType.SIZE];
+				weaponIdsByType = new int[(int)DamageType.SIZE];
+				weaponIdsByType[(int)DamageType.MAGIC] = setup.weapons[0];
+				weaponIdsByType[(int)DamageType.MELEE] = setup.weapons[1];
+				weaponIdsByType[(int)DamageType.RANGED] = setup.weapons[2];
 			}
 
 			public void checkForRequiredParts()
@@ -52,7 +56,7 @@ namespace DeadliestWarrior
 					{
 						requiredBossParts.Add(n.whoAmI, n.lifeMax);
 						totalBossHealth += n.lifeMax;
-						// Main.NewText("Added " + n.name + " (id = " + n.type + ") with " + n.lifeMax + " health.");
+						Main.NewText("Added " + n.name + " (id = " + n.type + ") with " + n.lifeMax + " health.");
 					}
 				}
 			}
@@ -62,29 +66,12 @@ namespace DeadliestWarrior
 				return boss;
 			}
 
-			public void recordDamage(NPC npc, string type, int id, int damage)
+			public void recordDamage(NPC npc, DamageType type, int damage)
 			{
-				try
-				{
-					Tuple<int, string> key = new Tuple<int, string>(id, type);
-					WeaponLog w = null;
-					weaponLogs.TryGetValue(key, out w);
+				damageByType[(int)type] += damage;
+				totalDamageToBoss += damage;
 
-					if (w == null)
-					{
-						w = new WeaponLog(id, type);
-						weaponLogs.Add(key, w);
-					}
-
-					w.damageDealt += damage;
-					totalDamageToBoss += damage;
-
-					checkForRequiredParts();
-				}
-				catch (Exception e)
-				{
-					Main.NewText(e.StackTrace);
-				}
+				checkForRequiredParts();
 			}
 
 			public void writeToFile()
@@ -102,9 +89,18 @@ namespace DeadliestWarrior
 					s.Write("\t<player>\n");
 					s.Write("\t\t<name>" + player.name + "</name>\n");
 					s.Write("\t\t<armor>\n");
-					s.Write("\t\t\t<head>" + armorHead + "</head>\n");
-					s.Write("\t\t\t<chest>" + armorChest + "</chest>\n");
-					s.Write("\t\t\t<legs>" + armorLegs + "</legs>\n");
+					s.Write("\t\t\t<head>\n");
+					s.Write("\t\t\t\t<id>" + armorHead + "</id>\n");
+					s.Write("\t\t\t\t<name>" + Utilities.getItemName(armorHead) + "</name>\n");
+					s.Write("\t\t\t</head>\n");
+					s.Write("\t\t\t<chest>\n");
+					s.Write("\t\t\t\t<id>" + armorChest + "</id>\n");
+					s.Write("\t\t\t\t<name>" + Utilities.getItemName(armorChest) + "</name>\n");
+					s.Write("\t\t\t</chest>\n");
+					s.Write("\t\t\t<legs>\n");
+					s.Write("\t\t\t\t<id>" + armorLegs + "</id>\n");
+					s.Write("\t\t\t\t<name>" + Utilities.getItemName(armorLegs) + "</name>\n");
+					s.Write("\t\t\t</legs>\n");
 					s.Write("\t\t</armor>\n");
 					s.Write("\t\t<stats>\n");
 					s.Write("\t\t\t<maxLife>" + maxLife + "</maxLife>\n");
@@ -112,19 +108,23 @@ namespace DeadliestWarrior
 					s.Write("\t\t</stats>\n");
 					s.Write("\t\t<weapons>\n");
 
-					foreach (KeyValuePair<Tuple<int, string>, WeaponLog> p in weaponLogs)
+					for (int i = 0; i < (int)DamageType.SIZE; ++i)
 					{
-						s.Write("\t\t\t<weapon>\n");
-						s.Write("\t\t\t\t<id>" + p.Value.weaponId + "</id>\n");
-						s.Write("\t\t\t\t<damage>" + p.Value.damageDealt + "</damage>\n");
-						s.Write("\t\t\t\t<type>" + p.Value.type + "</type>\n");
-						s.Write("\t\t\t</weapon>\n");
+						if (weaponIdsByType[i] != 0)
+						{
+							s.Write("\t\t\t<weapon>\n");
+							s.Write("\t\t\t\t<id>" + weaponIdsByType[i] +"</id>\n");
+							s.Write("\t\t\t\t<name>" + Utilities.getItemName(weaponIdsByType[i]) + "</name>\n");
+							s.Write("\t\t\t\t<damage>" + damageByType[i] + "</damage>\n");
+							s.Write("\t\t\t</weapon>\n");
+						}
 					}
 
 					s.Write("\t\t</weapons>\n");
 					s.Write("\t</player>\n");
 					s.Write("\t<boss>\n");
 					s.Write("\t\t<id>" + boss.type + "</id>\n");
+					s.Write("\t\t<name>" + boss.name + "</name>\n");
 					s.Write("\t\t<expert>" + Main.expertMode.ToString() + "</expert>\n");
 					s.Write("\t\t<maxLife>" + totalBossHealth + "</maxLife>\n");
 					s.Write("\t\t<damageTaken>" + totalDamageToBoss + "</damageTaken>\n");
@@ -143,42 +143,45 @@ namespace DeadliestWarrior
 			}
 		}
 
-		private class WeaponLog
-		{
-			public int weaponId;
-			public int damageDealt = 0;
-			public string type;
-			public bool valid = false;
-
-			public WeaponLog(int id, string type)
-			{
-				weaponId = id;
-				this.type = type;
-				valid = true;
-			}
-		}
-
-		public CombatTracker()
-		{
-			// Intentionally empty
-		}
-
 		public bool bossActive()
 		{
-			return currentLog != null;
+			bool bossActive = false;
+
+			if (currentLog != null)
+			{
+				for (int i = 0; i < Main.npc.Length; ++i)
+				{
+					if (Main.npc[i].active && Main.npc[i].boss)
+					{
+						bossActive = true;
+						break;
+					}
+				}
+			}
+
+			return bossActive;
 		}
 
-		public bool registerBoss(NPC boss)
+		public bool registerBoss(NPC boss, ClassSetup setup)
 		{
 			if (boss != null)
 			{
 				if (currentLog != null)
 				{
-					Main.NewText("Cannot track multiple bosses at once (failed to register " + boss.displayName + ")");
-					return false;
+					if (bossActive())
+					{
+						Main.NewText("Cannot track multiple bosses at once (failed to register " + boss.displayName + ")");
+						return false;
+					}
+					else
+					{
+						Main.NewText("Clearing inactive boss.");
+						currentLog.writeToFile();
+						currentLog = null;
+					}
 				}
 
-				currentLog = new CombatLog(Main.player[Main.selectedPlayer], boss);
+				currentLog = new CombatLog(Main.player[Main.selectedPlayer], boss, setup);
 				Main.NewText("Registered " + boss.displayName + " successfully");
 
 				return true;
@@ -207,23 +210,11 @@ namespace DeadliestWarrior
 			}
 		}
 
-		public void recordHit(Player player, NPC npc, Item item, int damage)
+		public void recordHit(Player player, NPC npc, DamageType type, int damage)
 		{
-			if (player.whoAmI == Main.selectedPlayer)
-				recordHit(npc, "item", item.type, damage);
-		}
-
-		public void recordHit(Player player, NPC npc, Projectile projectile, int damage)
-		{
-			if (player.whoAmI == Main.selectedPlayer)
-				recordHit(npc, "projectile", projectile.type, damage);
-		}
-
-		private void recordHit(NPC npc, string type, int id, int damage)
-		{
-			if (currentLog != null && Utilities.isSupportedBoss(npc.type))
+			if (player.whoAmI == Main.selectedPlayer && currentLog != null && Utilities.isSupportedBoss(npc.type))
 			{
-				currentLog.recordDamage(npc, type, id, damage);
+				currentLog.recordDamage(npc, type, damage);
 
 				if (currentLog.boss.life <= 0)
 					recordBossDeath();
